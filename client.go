@@ -1,1 +1,5 @@
-package goVerInfo
+package main
+
+func main() {
+
+}
