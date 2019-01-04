@@ -22,19 +22,6 @@ func (p *program) Stop(s service.Service) error {
 }
 
 func (p *program) run() {
-	//err := loadConfig()
-	//if err != nil {
-	//	common.PrintAndLog(err.Error())
-	//	return
-	//}
-	//common.PrintAndLog("service run")
-
-	err := loadConfig()
-	if err != nil {
-		common.PrintAndLog("加载配置文件时遇到错误:" + err.Error())
-		return
-	}
-
 	ws := webService.WebService{
 		Port: global.SysConfig.Total.Port,
 	}
@@ -42,88 +29,63 @@ func (p *program) run() {
 }
 
 func main() {
-	//==============================================================================
-	//_ = loadConfig()
-	//
-	//ws := webService.WebService{
-	//	Port:global.SysConfig.Total.Port,
-	//}
-	//go func(){
-	//	err := ws.Start()
-	//	if err != nil {
-	//		common.PrintAndLog(err.Error())
-	//	}
-	//}()
-	//==============================================================================
+	err := global.RefreshConfig()
+	if err != nil {
+		common.PrintAndLog("加载配置时遇到错误:" + err.Error())
+		return
+	}
+
+	svcConfig := &service.Config{
+		Name:        "Name",        //服务显示名称
+		DisplayName: "DisplayName", //服务名称
+		Description: "Description", //服务描述
+	}
+
+	prg := &program{}
+	s, err := service.New(prg, svcConfig)
+	if err != nil {
+		common.PrintAndLog("创建服务对象时遇到错误:" + err.Error())
+		return
+	}
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "install":
-			installService()
+			installService(s)
 			return
 		case "uninstall":
-			unInstallService()
+			unInstallService(s)
 			return
 		default:
 			fmt.Println("未识别的参数名称\n安装服务:install\n卸载服务:uninstall")
 			return
 		}
-	} else {
-		p := program{}
-		p.run()
 	}
-}
 
-func loadConfig() error {
-	err := global.RefreshConfig()
+	err = s.Run()
 	if err != nil {
-		common.PrintAndLog(err.Error())
-		return err
+		common.PrintAndLog("运行时遇到错误:" + err.Error())
 	}
-	return nil
 }
 
-func getService() (service.Service, error) {
-	svcConfig := &service.Config{
-		Name:        "Name",
-		DisplayName: "DisplayName",
-		Description: "Description",
-	}
-
-	prg := &program{}
-	return service.New(prg, svcConfig)
-}
-
-func installService() {
-	s, err := getService()
-	if err != nil {
-		common.PrintAndLog("Install error:" + err.Error())
-		return
-	}
-	err = s.Install()
+func installService(s service.Service) {
+	err := s.Install()
 	msg := ""
 	if err != nil {
-		msg = err.Error()
+		msg = "安装服务时遇到错误:" + err.Error()
 	} else {
 		msg = "服务安装成功"
 	}
 	fmt.Println(msg)
-	common.PrintAndLog(msg)
 }
 
-func unInstallService() {
-	s, err := getService()
-	if err != nil {
-		common.PrintAndLog("UnInstall error:" + err.Error())
-		return
-	}
-	err = s.Uninstall()
+func unInstallService(s service.Service) {
+	err := s.Uninstall()
 	msg := ""
 	if err != nil {
-		msg = err.Error()
+		msg = "卸载服务时遇到错误:" + err.Error()
 	} else {
 		msg = "服务卸载成功"
 	}
 	fmt.Println(msg)
-	common.PrintAndLog(msg)
 }

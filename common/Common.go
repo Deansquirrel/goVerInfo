@@ -16,5 +16,4 @@ func PrintAndLog(msg string) {
 	} else {
 		fmt.Println(msg)
 	}
-
 }

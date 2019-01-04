@@ -12,7 +12,7 @@ var SysConfig object.SysConfig
 func RefreshConfig() error {
 	err := refreshSysConfig()
 	if err != nil {
-		return errors.New("刷新SysConfig时遇到错误:" + err.Error())
+		return errors.New("刷新SysConfig:" + err.Error())
 	}
 	return nil
 }
@@ -30,8 +30,4 @@ func refreshSysConfig() error {
 	}
 	SysConfig = sysConfig
 	return nil
-}
-
-func SetEnv() {
-
 }
